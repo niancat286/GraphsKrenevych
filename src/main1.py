@@ -1,11 +1,11 @@
 from tkinter import *
-from math import *
+
 
 root = Tk()
 r = 25
 cord = []
 
-# Створюємо полотно
+
 canvas = Canvas(root, width=800, height=800)
 canvas.pack(side=LEFT)
 
