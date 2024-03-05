@@ -26,8 +26,11 @@ def onCanvasClick(ev: Event):
 
     if checkDist((ev.x, ev.y)):
         cord.append((ev.x, ev.y))
-        canvas.create_oval(ev.x - r, ev.y - r, ev.x + r, ev.y + r, fill = 'lime')
-        canvas.create_text(ev.x, ev.y, text = str(numOfTop))
+        canvas.option_clear()
+        for i in range(numOfTop):
+            canvas.create_oval(ev.x - r, ev.y - r, ev.x + r, ev.y + r, fill = 'lime')
+            canvas.create_text(ev.x, ev.y, text = str(i+1))
+
         numOfTop += 1
 
 
