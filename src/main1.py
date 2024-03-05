@@ -20,9 +20,10 @@ def checkDist(cur):
 
 def update_canv(cur):
     canvas.create_rectangle(0, 0, 800, 800, fill = 'white')
+    i = 1
     for i in range(cur):
         canvas.create_oval(cord[i][0] - r, cord[i][1] - r, cord[i][0] + r, cord[i][1] + r, fill='lime')
-        canvas.create_text(cord[i][0], cord[i][1], text=str(i))
+        canvas.create_text(cord[i][0], cord[i][1], text=str(i+1))
 
 
 def onCanvasClick(ev: Event):
@@ -34,7 +35,7 @@ def onCanvasClick(ev: Event):
         cord.append((ev.x, ev.y))
         update_canv(numOfTop)
         canvas.create_oval(ev.x - r, ev.y - r, ev.x + r, ev.y + r, fill = 'lime')
-        canvas.create_text(ev.x, ev.y, text = str(numOfTop-1))
+        canvas.create_text(ev.x, ev.y, text = str(numOfTop))
 
         numOfTop += 1
 
