@@ -19,7 +19,7 @@ def checkDist(cur):
     return True
 
 def update_canv(cur):
-    canvas.create_rectangle(0, 0, 800, 800, fill = 'white')
+    canvas.delete('all')
     i = 1
     for i in range(cur):
         canvas.create_oval(cord[i][0] - r, cord[i][1] - r, cord[i][0] + r, cord[i][1] + r, fill='lime')
