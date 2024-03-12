@@ -1,83 +1,95 @@
 from tkinter import *
 
-
 root = Tk()
 r = 25
 numOfTop = 0
 cord = []
-connect = []
+graph = []
 connectFlag = False
 
-for с in range(50):
-    connect.append([0]*50)
-
+for c in range(50):
+    graph.append([0] * 50)
 
 canvas = Canvas(root, width=800, height=800)
 canvas.pack(side=LEFT)
 
 
+def dist(v1, v2):
+    return ((v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2) ** 0.5
+
+
+def find(v):
+    for el in cord:
+        if dist(el, v) < 2 * (r + 2):
+            return el
+    return None
+
+
+def find_index(v):
+    for index, el in enumerate(cord):
+        if dist(el, v) < 2 * (r + 2):
+            return index
+    return None
+
 def checkDist(cur):
     for el in cord:
-        if (el[0] - cur[0]) ** 2 + (el[1] - cur[1]) ** 2 < 4 * (r + 2) ** 2:
+        if dist(el, cur) < 2 * (r + 2):
             return False
     return True
 
 
 def update_canv():
     canvas.delete('all')
-    for el in connect:
-        canvas.create_line(cord[el[0]][0], cord[el[0]][1], cord[el[1]][0], cord[el[1]][1])
+
+    for i in range(50):
+        for j in range(50):
+            if graph[i][j] == 1:
+                canvas.create_line(cord[i][0], cord[i][1], cord[j][0], cord[j][1])
+
     for i in range(numOfTop):
         canvas.create_oval(cord[i][0] - r, cord[i][1] - r, cord[i][0] + r, cord[i][1] + r, fill='lime')
-        canvas.create_text(cord[i][0], cord[i][1], text=str(i))
+        canvas.create_text(cord[i][0], cord[i][1], text=str(i + 1))
 
 
-def onCanvasClickRight(ev: Event): #буде використано для видалення
+def onCanvasClickRight(ev: Event):  # буде використано для видалення
+    pass
+
+
+def addVertex(x, y):
     global numOfTop
-    print(ev)
-    if checkDist((ev.x, ev.y)):
-        update_canv()
-        canvas.create_oval(ev.x - r, ev.y - r, ev.x + r, ev.y + r, fill = 'lime')
-        canvas.create_text(ev.x, ev.y, text = str(numOfTop))
-        numOfTop -= 1
+    cord.append((x, y))
+    update_canv()
+    canvas.create_oval(x - r, y - r, x + r, y + r, fill='lime')
+    canvas.create_text(x, y, text=str(numOfTop + 1))
+    numOfTop += 1
+
+
+selected_vertex = None
 
 
 def onCanvasClickLeft(ev: Event):
-    global numOfTop, connectFlag
-    i = -1
-    j = -1
+    global selected_vertex
 
-    if checkDist((ev.x, ev.y)):
-        cord.append((ev.x, ev.y))
-        update_canv()
-        canvas.create_oval(ev.x - r, ev.y - r, ev.x + r, ev.y + r, fill = 'lime')
-        canvas.create_text(ev.x, ev.y, text = str(numOfTop))
-        connectFlag = False
-        numOfTop += 1
+    current_point = (ev.x, ev.y)
+    vertex = find(current_point)
+    if vertex is None:
+        selected_vertex = current_point
+        addVertex(ev.x, ev.y)
 
-    elif not checkDist((ev.x, ev.y)):
-        if not connectFlag:
-            for el in cord:
-                i += 1
-                if (el[0] - ev.x) ** 2 + (el[1] - ev.y) ** 2 < 4 * r ** 2:
-                    connectFlag = True
-                    break
+    else:  # пошук вершин для побудови ребра
+        if selected_vertex is None:
+            selected_vertex = vertex
 
+        elif selected_vertex == vertex:
+            selected_vertex = None
 
-        else:
-            for el in cord:
-                j += 1
-                if (el[0] - ev.x) ** 2 + (el[1] - ev.y) ** 2 < 4 * r ** 2:
-                    connectFlag = False
-                    break
-
-
-            if (connect[i][j] != 1) and (connect[j][i] != 1):
-                canvas.create_line(cord[i][0], cord[i][1], cord[j][0], cord[j][1])
-                connect[i][j] = 1
-                connect[j][i] = 1
-
-
+        elif selected_vertex is not None and vertex != selected_vertex:
+            canvas.create_line(vertex[0], vertex[1], selected_vertex[0], selected_vertex[1])
+            index1 = find_index(vertex)
+            index2 = find_index(selected_vertex)
+            graph[index1][index2] = 1
+            graph[index2][index1] = 1
+            selected_vertex = None
 
 
 
