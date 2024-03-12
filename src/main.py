@@ -14,26 +14,26 @@ canvas = Canvas(root, width=800, height=800)
 canvas.pack(side=LEFT)
 
 
-def dist(v1, v2):
+def dist_to_vertex(v1, v2):
     return ((v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2) ** 0.5
 
 
-def find(v):
+def find_vertex(v):
     for el in cord:
-        if dist(el, v) < 2 * (r + 2):
+        if dist_to_vertex(el, v) < 2 * (r + 2):
             return el
     return None
 
 
 def find_index(v):
     for index, el in enumerate(cord):
-        if dist(el, v) < 2 * (r + 2):
+        if dist_to_vertex(el, v) < 2 * (r + 2):
             return index
     return None
 
 def checkDist(cur):
     for el in cord:
-        if dist(el, cur) < 2 * (r + 2):
+        if dist_to_vertex(el, cur) < 2 * (r + 2):
             return False
     return True
 
@@ -67,7 +67,7 @@ def onCanvasClickLeft(ev: Event):
     global selected_vertex
 
     current_point = (ev.x, ev.y)
-    vertex = find(current_point)
+    vertex = find_vertex(current_point)
     if vertex is None:
         selected_vertex = current_point
         addVertex(ev.x, ev.y)
@@ -90,11 +90,29 @@ def onCanvasClickLeft(ev: Event):
 
 selected_vertex_for_delete = None
 
+def remove_extra_ribs(index):
+    global graph
+    if index == numOfTop:
+        for i in range(numOfTop):
+            graph[index][i] = 0
+        for i in range(numOfTop):
+            graph[i][index] = 0
+    else:
+        for i in range(numOfTop - 1):
+            for j in range(numOfTop - 1):
+                graph[index + i - 1][j] = graph[index + i - 1][j + 1]
+                graph[index + i - 1][j + 1] = 0
+
+        for i in range(numOfTop - 1):
+            for j in range(numOfTop - 1):
+                graph[j][index + i - 1] = graph[j + 1][index + i - 1]
+                graph[j + 1][index + i - 1] = 0
+
 def onCanvasClickRight(ev: Event):  # використано для видалення елементів з канви
     global numOfTop, selected_vertex_for_delete, cord
 
     current_point = (ev.x, ev.y)
-    vertex = find(current_point)
+    vertex = find_vertex(current_point)
 
     if vertex is not None:
 
@@ -107,12 +125,11 @@ def onCanvasClickRight(ev: Event):  # використано для видале
 
         cord.pop(index)
         selected_vertex_for_delete = None
+
+        remove_extra_ribs(index)
+
         numOfTop -= 1
-
         update_canv()
-
-
-        #graph[index][]
 
 
 
