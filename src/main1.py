@@ -8,6 +8,9 @@ cord = []
 connect = []
 connectFlag = False
 
+for с in range(50):
+    connect.append([0]*50)
+
 
 canvas = Canvas(root, width=800, height=800)
 canvas.pack(side=LEFT)
@@ -17,8 +20,8 @@ def checkDist(cur):
     for el in cord:
         if (el[0] - cur[0]) ** 2 + (el[1] - cur[1]) ** 2 < 4 * (r + 2) ** 2:
             return False
-
     return True
+
 
 def update_canv():
     canvas.delete('all')
@@ -41,35 +44,39 @@ def onCanvasClickRight(ev: Event): #буде використано для ви�
 
 def onCanvasClickLeft(ev: Event):
     global numOfTop, connectFlag
-    print(ev)
-    i = 0
-    j = 0
+    i = -1
+    j = -1
 
     if checkDist((ev.x, ev.y)):
         cord.append((ev.x, ev.y))
         update_canv()
         canvas.create_oval(ev.x - r, ev.y - r, ev.x + r, ev.y + r, fill = 'lime')
         canvas.create_text(ev.x, ev.y, text = str(numOfTop))
-
+        connectFlag = False
         numOfTop += 1
 
     elif not checkDist((ev.x, ev.y)):
         if not connectFlag:
             for el in cord:
+                i += 1
                 if (el[0] - ev.x) ** 2 + (el[1] - ev.y) ** 2 < 4 * r ** 2:
                     connectFlag = True
                     break
-                i += 1
+
 
         else:
             for el in cord:
+                j += 1
                 if (el[0] - ev.x) ** 2 + (el[1] - ev.y) ** 2 < 4 * r ** 2:
                     connectFlag = False
                     break
-                j += 1
 
-        connect.append((i, j))
-        canvas.create_line(cord[i][0], cord[i][1], cord[j][0], cord[j][1])
+
+            if (connect[i][j] != 1) and (connect[j][i] != 1):
+                canvas.create_line(cord[i][0], cord[i][1], cord[j][0], cord[j][1])
+                connect[i][j] = 1
+                connect[j][i] = 1
+
 
 
 
