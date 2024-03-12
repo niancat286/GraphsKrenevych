@@ -51,12 +51,8 @@ def update_canv():
         canvas.create_text(cord[i][0], cord[i][1], text=str(i + 1))
 
 
-def onCanvasClickRight(ev: Event):  # буде використано для видалення
-    pass
-
-
 def addVertex(x, y):
-    global numOfTop
+    global numOfTop, cord
     cord.append((x, y))
     update_canv()
     canvas.create_oval(x - r, y - r, x + r, y + r, fill='lime')
@@ -84,16 +80,47 @@ def onCanvasClickLeft(ev: Event):
             selected_vertex = None
 
         elif selected_vertex is not None and vertex != selected_vertex:
-            canvas.create_line(vertex[0], vertex[1], selected_vertex[0], selected_vertex[1])
             index1 = find_index(vertex)
             index2 = find_index(selected_vertex)
             graph[index1][index2] = 1
             graph[index2][index1] = 1
             selected_vertex = None
+            update_canv()
+
+
+selected_vertex_for_delete = None
+
+def onCanvasClickRight(ev: Event):  # використано для видалення елементів з канви
+    global numOfTop, selected_vertex_for_delete, cord
+
+    current_point = (ev.x, ev.y)
+    vertex = find(current_point)
+
+    if vertex is not None:
+
+        if selected_vertex_for_delete is None:
+            selected_vertex_for_delete = vertex
+
+
+
+        index = find_index(selected_vertex_for_delete)
+
+        cord.pop(index)
+        selected_vertex_for_delete = None
+        numOfTop -= 1
+
+        update_canv()
+
+
+        #graph[index][]
+
+
+
 
 
 
 
 canvas.bind('<Button-1>', onCanvasClickLeft)
+canvas.bind('<Button-2>', onCanvasClickRight)
 
 root.mainloop()
