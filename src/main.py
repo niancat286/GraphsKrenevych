@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import filedialog
 
 root = Tk()
 r = 25
@@ -144,7 +145,8 @@ def onCanvasClickRight(ev: Event):  # використано для видале
 
 def graph_from_file():
     global cord, graph, numOfTop
-
+    filetypes = [('text files', '.txt')]
+    canvas.filename = filedialog.askopenfilename(filetypes = filetypes)
     for i in range(50):
         for j in range(50):
             graph[i][j] = 0
@@ -154,7 +156,7 @@ def graph_from_file():
     for c in range(50):
         active_vertex[c] = 1
 
-    with open("graph1.txt", "r") as file1:
+    with open(canvas.filename, "r") as file1:
         V, E = map(int, file1.readline().split())
         for v in range(V):
             x, y = map(int, file1.readline().split())
@@ -170,8 +172,9 @@ def graph_from_file():
 
 def graph_in_file():
     global cord, graph, numOfTop
-
-    with open("graph2.txt", "w") as file1:
+    filetypes = [('text files', '.txt')]
+    canvas.filename = filedialog.askopenfilename(filetypes = filetypes)
+    with open(canvas.filename, "w") as file1:
         V = str(count_active_vertex())
         E = str(numOfRibs)
         file1.write(V)
