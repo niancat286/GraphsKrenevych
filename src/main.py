@@ -5,10 +5,13 @@ r = 25
 numOfTop = 0
 cord = []
 graph = []
-connectFlag = False
+active_vertex = []
 
 for c in range(50):
     graph.append([0] * 50)
+
+for c in range(50):
+    active_vertex.append(1)
 
 canvas = Canvas(root, width=800, height=800)
 canvas.pack(side=LEFT)
@@ -40,23 +43,31 @@ def checkDist(cur):
 
 def update_canv():
     canvas.delete('all')
-
+    vertex_num = 1
     for i in range(50):
         for j in range(50):
-            if graph[i][j] == 1:
+            if graph[i][j] == 1 and active_vertex[i] == 1 and active_vertex[j] == 1:
                 canvas.create_line(cord[i][0], cord[i][1], cord[j][0], cord[j][1])
 
     for i in range(numOfTop):
-        canvas.create_oval(cord[i][0] - r, cord[i][1] - r, cord[i][0] + r, cord[i][1] + r, fill='lime')
-        canvas.create_text(cord[i][0], cord[i][1], text=str(i + 1))
+        if active_vertex[i] == 1:
+            canvas.create_oval(cord[i][0] - r, cord[i][1] - r, cord[i][0] + r, cord[i][1] + r, fill='lime')
+            canvas.create_text(cord[i][0], cord[i][1], text=str(vertex_num))
+            vertex_num += 1
 
+def count_active_vertex():
+    num = 0
+    for i in range(numOfTop):
+        if active_vertex[i] == 1:
+            num += 1
+    return num
 
 def addVertex(x, y):
     global numOfTop, cord
     cord.append((x, y))
     update_canv()
     canvas.create_oval(x - r, y - r, x + r, y + r, fill='lime')
-    canvas.create_text(x, y, text=str(numOfTop + 1))
+    canvas.create_text(x, y, text=str(count_active_vertex()+1))
     numOfTop += 1
 
 
@@ -64,13 +75,19 @@ selected_vertex = None
 
 
 def onCanvasClickLeft(ev: Event):
-    global selected_vertex
+    global selected_vertex, active_vertex
 
     current_point = (ev.x, ev.y)
     vertex = find_vertex(current_point)
     if vertex is None:
         selected_vertex = current_point
         addVertex(ev.x, ev.y)
+
+    elif active_vertex[find_index(vertex)] == 0:
+        selected_vertex = current_point
+        active_vertex[find_index(vertex)] = 1
+        update_canv()
+
 
     else:  # пошук вершин для побудови ребра
         if selected_vertex is None:
@@ -90,32 +107,26 @@ def onCanvasClickLeft(ev: Event):
 
 selected_vertex_for_delete = None
 
-def remove_extra_ribs(index):
+def remove_extra_ribs():
     global graph
-    if index == numOfTop:
-        for i in range(numOfTop):
-            graph[index][i] = 0
-        for i in range(numOfTop):
-            graph[i][index] = 0
-    else:
-        for i in range(numOfTop - 1):
-            for j in range(numOfTop - 1):
-                graph[index + i - 1][j] = graph[index + i - 1][j + 1]
-                graph[index + i - 1][j + 1] = 0
 
-        for i in range(numOfTop - 1):
-            for j in range(numOfTop - 1):
-                graph[j][index + i - 1] = graph[j + 1][index + i - 1]
-                graph[j + 1][index + i - 1] = 0
+    for i in range(50):
+        if active_vertex[i] == 0:
+            for j in range(50):
+                graph[i][j] = 0
+                graph[j][i] = 0
+
+
+
 
 def onCanvasClickRight(ev: Event):  # використано для видалення елементів з канви
-    global numOfTop, selected_vertex_for_delete, cord
+    global numOfTop, selected_vertex_for_delete, cord, selected_vertex
 
     current_point = (ev.x, ev.y)
     vertex = find_vertex(current_point)
 
     if vertex is not None:
-
+        selected_vertex = None
         if selected_vertex_for_delete is None:
             selected_vertex_for_delete = vertex
 
@@ -123,12 +134,12 @@ def onCanvasClickRight(ev: Event):  # використано для видале
 
         index = find_index(selected_vertex_for_delete)
 
-        cord.pop(index)
+        active_vertex[index] = 0
+        remove_extra_ribs()
+
         selected_vertex_for_delete = None
 
-        remove_extra_ribs(index)
 
-        numOfTop -= 1
         update_canv()
 
 
