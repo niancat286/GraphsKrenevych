@@ -212,7 +212,7 @@ button_save_file = Button(canvas, text='Save graph', command=graph_in_file)
 button_save_file.place(x=110, y=10)
 
 button_close_file = Button(canvas, text='Exit', command=close)
-button_close_file.place(x=160, y=10)
+button_close_file.place(x=725, y=10)
 
 canvas.bind('<Button-1>', onCanvasClickLeft)
 canvas.bind('<Button-2>', onCanvasClickRight)
