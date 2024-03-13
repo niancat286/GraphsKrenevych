@@ -15,7 +15,6 @@ for c in range(50):
 for c in range(50):
     active_vertex.append(1)
 
-
 canvas = Canvas(root, width=800, height=800)
 canvas.pack(side=LEFT)
 
@@ -142,11 +141,10 @@ def onCanvasClickRight(ev: Event):  # використано для видале
         update_canv()
 
 
-
 def graph_from_file():
     global cord, graph, numOfTop
     filetypes = [('text files', '.txt')]
-    canvas.filename = filedialog.askopenfilename(filetypes = filetypes)
+    canvas.filename = filedialog.askopenfilename(filetypes=filetypes)
     for i in range(50):
         for j in range(50):
             graph[i][j] = 0
@@ -164,16 +162,17 @@ def graph_from_file():
 
         for e in range(E):
             i1, i2 = map(int, file1.readline().split())
-            graph[i1-1][i2-1] = 1
-            graph[i2-1][i1-1] = 1
+            graph[i1 - 1][i2 - 1] = 1
+            graph[i2 - 1][i1 - 1] = 1
 
     numOfTop = V
     update_canv()
 
+
 def graph_in_file():
     global cord, graph, numOfTop
     filetypes = [('text files', '.txt')]
-    canvas.filename = filedialog.askopenfilename(filetypes = filetypes)
+    canvas.filename = filedialog.askopenfilename(filetypes=filetypes)
     with open(canvas.filename, "w") as file1:
         V = str(count_active_vertex())
         E = str(numOfRibs)
@@ -194,23 +193,26 @@ def graph_in_file():
             if active_vertex[e] == 1:
                 for i in range(numOfTop):
                     if graph[e][i] == 1:
-                        i1 = str(e+1)
-                        i2 = str(i+1)
+                        i1 = str(e + 1)
+                        i2 = str(i + 1)
                         file1.write(i1)
                         file1.write(' ')
                         file1.write(i2)
                         file1.write('\n')
 
 
+def close():
+    canvas.quit()
 
 
+button_exp_file = Button(canvas, text='Export file', command=graph_from_file)
+button_exp_file.place(x=10, y=10)
 
-button_exp_file = Button(canvas, text ='Export file', command = graph_from_file)
-button_exp_file.place(x = 10, y = 10)
+button_save_file = Button(canvas, text='Save graph', command=graph_in_file)
+button_save_file.place(x=110, y=10)
 
-
-button_save_file = Button(canvas, text ='Save graph',  command= graph_in_file)
-button_save_file.place(x = 110, y = 10)
+button_close_file = Button(canvas, text='Exit', command=close)
+button_close_file.place(x=160, y=10)
 
 canvas.bind('<Button-1>', onCanvasClickLeft)
 canvas.bind('<Button-2>', onCanvasClickRight)
