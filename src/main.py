@@ -49,8 +49,8 @@ def update_canv():
     numOfRibs = 0
     canvas.delete('all')
     vertex_num = 1
-    for i in range(50):
-        for j in range(50):
+    for i in range(numOfTop):
+        for j in range(numOfTop):
             if graph[i][j] == 1 and active_vertex[i] == 1 and active_vertex[j] == 1:
                 canvas.create_line(cord[i][0], cord[i][1], cord[j][0], cord[j][1])
                 numOfRibs += 1
@@ -83,7 +83,7 @@ selected_vertex = None
 
 
 def onCanvasClickLeft(ev: Event):
-    global selected_vertex, active_vertex
+    global selected_vertex, active_vertex, numOfRibs
 
     current_point = (ev.x, ev.y)
     vertex = find_vertex(current_point)
@@ -107,8 +107,16 @@ def onCanvasClickLeft(ev: Event):
         elif selected_vertex is not None and vertex != selected_vertex:
             index1 = find_index(vertex)
             index2 = find_index(selected_vertex)
-            graph[index1][index2] = 1
-            graph[index2][index1] = 1
+            if graph[index1][index2] == 1:
+                graph[index1][index2] = 0
+                graph[index2][index1] = 0
+                numOfRibs -= 1
+
+            else:
+                graph[index1][index2] = 1
+                graph[index2][index1] = 1
+
+
             selected_vertex = None
             update_canv()
 
@@ -142,15 +150,19 @@ def onCanvasClickRight(ev: Event):  # використано для видале
 
 
 def graph_from_file():
-    global cord, graph, numOfTop
+    global cord, graph, numOfTop, numOfRibs, selected_vertex, selected_vertex_for_delete
     filetypes = [('text files', '.txt')]
     canvas.filename = filedialog.askopenfilename(filetypes=filetypes)
+
     for i in range(50):
         for j in range(50):
             graph[i][j] = 0
 
     cord = []
     numOfTop = 0
+    numOfRibs = 0
+    selected_vertex = None
+    selected_vertex_for_delete = None
     for c in range(50):
         active_vertex[c] = 1
 
@@ -166,11 +178,12 @@ def graph_from_file():
             graph[i2 - 1][i1 - 1] = 1
 
     numOfTop = V
+    numOfRibs = E
     update_canv()
 
 
 def graph_in_file():
-    global cord, graph, numOfTop
+    global cord, graph, numOfTop, numOfRibs
     filetypes = [('text files', '.txt')]
     canvas.filename = filedialog.askopenfilename(filetypes=filetypes)
     with open(canvas.filename, "w") as file1:
