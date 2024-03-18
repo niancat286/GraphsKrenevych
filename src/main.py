@@ -1,22 +1,21 @@
 from tkinter import *
 from tkinter import filedialog
 
-root = Tk()
+MAX_ELEMS = 50
 r = 25
-numOfTop = 0
-numOfRibs = 0
-cord = []
-graph = []
-active_vertex = []
 
-for c in range(50):
-    graph.append([0] * 50)
 
-for c in range(50):
-    active_vertex.append(1)
+def init():
+    global numOfTop, active_vertex, cord, graph, selected_vertex, selected_vertex_for_delete
+    numOfTop = 0
+    selected_vertex = None
+    selected_vertex_for_delete = None
+    active_vertex = [False] * MAX_ELEMS
+    cord = [(0, 0, 0)] * MAX_ELEMS  #третя координата це імʼя вершини
 
-canvas = Canvas(root, width=800, height=800)
-canvas.pack(side=LEFT)
+    graph = []
+    for c in range(MAX_ELEMS):
+        graph.append([0] * MAX_ELEMS)
 
 
 def dist_to_vertex(v1, v2):
@@ -24,78 +23,75 @@ def dist_to_vertex(v1, v2):
 
 
 def find_vertex(v):
-    for el in cord:
+    for i in range(MAX_ELEMS):
+        if not active_vertex[i]:  # вершина неактивна
+            continue
+        el = cord[i]
         if dist_to_vertex(el, v) < 2 * (r + 2):
-            return el
-    return None
+            return el, i
+    return None, None
 
 
-def find_index(v):
-    for index, el in enumerate(cord):
-        if dist_to_vertex(el, v) < 2 * (r + 2):
-            return index
-    return None
-
-
-def checkDist(cur):
-    for el in cord:
-        if dist_to_vertex(el, cur) < 2 * (r + 2):
-            return False
-    return True
-
-
-def update_canv():
-    global numOfRibs
-    numOfRibs = 0
+def update():
     canvas.delete('all')
-    vertex_num = 1
-    for i in range(numOfTop):
-        for j in range(numOfTop):
-            if graph[i][j] == 1 and active_vertex[i] == 1 and active_vertex[j] == 1:
-                canvas.create_line(cord[i][0], cord[i][1], cord[j][0], cord[j][1])
-                numOfRibs += 1
+    for i in range(MAX_ELEMS):
+        if not active_vertex[i]:
+            continue
 
-    for i in range(numOfTop):
-        if active_vertex[i] == 1:
+        for j in range(MAX_ELEMS):
+            if active_vertex[j] and graph[i][j] == 1:
+                canvas.create_line(cord[i][0], cord[i][1], cord[j][0], cord[j][1])
+
+    for i in range(MAX_ELEMS):
+        if active_vertex[i]:
             canvas.create_oval(cord[i][0] - r, cord[i][1] - r, cord[i][0] + r, cord[i][1] + r, fill='lime')
-            canvas.create_text(cord[i][0], cord[i][1], text=str(vertex_num))
-            vertex_num += 1
+            canvas.create_text(cord[i][0], cord[i][1], text=str(cord[i][2]))
 
 
 def count_active_vertex():
     num = 0
-    for i in range(numOfTop):
-        if active_vertex[i] == 1:
+    for i in range(MAX_ELEMS):
+        if active_vertex[i]:
             num += 1
     return num
 
 
-def addVertex(x, y):
-    global numOfTop, cord
-    cord.append((x, y))
-    update_canv()
-    canvas.create_oval(x - r, y - r, x + r, y + r, fill='lime')
-    canvas.create_text(x, y, text=str(count_active_vertex() + 1))
+def count_edges():
+    num = 0
+    for i in range(MAX_ELEMS):
+        for j in range(MAX_ELEMS):
+            if active_vertex[i] and active_vertex[j] and graph[i][j] == 1:
+                num += 1
+
+    return num
+
+
+def find_free_place():
+    for i in range(MAX_ELEMS):
+        if not active_vertex[i]:
+            return i
+
+    raise RuntimeError("Graph is overloaded")
+
+
+def addVertex(x, y, n):
+    global numOfTop
+    i = find_free_place()
     numOfTop += 1
+    cord[i] = (x, y, n)
+    active_vertex[i] = True
 
-
-selected_vertex = None
+    update()
 
 
 def onCanvasClickLeft(ev: Event):
-    global selected_vertex, active_vertex, numOfRibs
+    global selected_vertex, active_vertex
 
     current_point = (ev.x, ev.y)
-    vertex = find_vertex(current_point)
+    vertex, index = find_vertex(current_point)
     if vertex is None:
         selected_vertex = current_point
-        addVertex(ev.x, ev.y)
-
-    elif active_vertex[find_index(vertex)] == 0:
-        selected_vertex = current_point
-        active_vertex[find_index(vertex)] = 1
-        update_canv()
-
+        addVertex(ev.x, ev.y, numOfTop+1)
 
     else:  # пошук вершин для побудови ребра
         if selected_vertex is None:
@@ -105,129 +101,118 @@ def onCanvasClickLeft(ev: Event):
             selected_vertex = None
 
         elif selected_vertex is not None and vertex != selected_vertex:
-            index1 = find_index(vertex)
-            index2 = find_index(selected_vertex)
-            if graph[index1][index2] == 1:
-                graph[index1][index2] = 0
-                graph[index2][index1] = 0
-                numOfRibs -= 1
+            v, index2 = find_vertex(selected_vertex)
+            if graph[index][index2] == 1:
+                graph[index][index2] = 0
+                graph[index2][index] = 0
 
             else:
-                graph[index1][index2] = 1
-                graph[index2][index1] = 1
-
+                graph[index][index2] = 1
+                graph[index2][index] = 1
 
             selected_vertex = None
-            update_canv()
 
-
-selected_vertex_for_delete = None
+        update()
 
 
 def remove_extra_ribs():
-    global graph, numOfRibs
-    for i in range(50):
-        if active_vertex[i] == 0:
-            for j in range(50):
+    global graph
+    for i in range(MAX_ELEMS):
+        if not active_vertex[i]:
+            for j in range(MAX_ELEMS):
                 graph[i][j] = 0
                 graph[j][i] = 0
-                numOfRibs -= 1
 
 
 def onCanvasClickRight(ev: Event):  # використано для видалення елементів з канви
-    global numOfTop, selected_vertex_for_delete, cord, selected_vertex
+    global selected_vertex_for_delete, cord, selected_vertex
     current_point = (ev.x, ev.y)
-    vertex = find_vertex(current_point)
+    vertex, index = find_vertex(current_point)
     if vertex is not None:
         selected_vertex = None
         if selected_vertex_for_delete is None:
             selected_vertex_for_delete = vertex
-        index = find_index(selected_vertex_for_delete)
-        active_vertex[index] = 0
+        v, index = find_vertex(selected_vertex_for_delete)
+        active_vertex[index] = False
         remove_extra_ribs()
         selected_vertex_for_delete = None
-        update_canv()
+        update()
+
+def find_max_n(array):
+    maxn = 0
+    for i in range(numOfTop-1):
+        if array[i][2] < array[i+1][2]:
+            maxn = array[i+1][2]
+    return maxn
 
 
-def graph_from_file():
-    global cord, graph, numOfTop, numOfRibs, selected_vertex, selected_vertex_for_delete
+def load_graph():
+    global graph, numOfTop
     filetypes = [('text files', '.txt')]
     canvas.filename = filedialog.askopenfilename(filetypes=filetypes)
 
-    for i in range(50):
-        for j in range(50):
-            graph[i][j] = 0
-
-    cord = []
-    numOfTop = 0
-    numOfRibs = 0
-    selected_vertex = None
-    selected_vertex_for_delete = None
-    for c in range(50):
-        active_vertex[c] = 1
+    init()
 
     with open(canvas.filename, "r") as file1:
-        V, E = map(int, file1.readline().split())
+        V, E, N = map(int, file1.readline().split())
         for v in range(V):
-            x, y = map(int, file1.readline().split())
-            cord.append((x, y))
+            x, y, n = map(int, file1.readline().split())
+            addVertex(x, y, n)
 
         for e in range(E):
             i1, i2 = map(int, file1.readline().split())
             graph[i1 - 1][i2 - 1] = 1
-            graph[i2 - 1][i1 - 1] = 1
 
-    numOfTop = V
-    numOfRibs = E
-    update_canv()
+    update()
+    numOfTop = find_max_n(cord)
 
 
-def graph_in_file():
-    global cord, graph, numOfTop, numOfRibs
+def save_graph():
+    global cord, graph
     filetypes = [('text files', '.txt')]
     canvas.filename = filedialog.askopenfilename(filetypes=filetypes)
-    with open(canvas.filename, "w") as file1:
-        V = str(count_active_vertex())
-        E = str(numOfRibs)
-        file1.write(V)
-        file1.write(' ')
-        file1.write(E)
-        file1.write('\n')
-        for v in range(numOfTop):
-            if active_vertex[v] == 1:
-                x = str(cord[v][0])
-                y = str(cord[v][1])
-                file1.write(x)
-                file1.write(' ')
-                file1.write(y)
-                file1.write('\n')
 
-        for e in range(numOfTop):
-            if active_vertex[e] == 1:
-                for i in range(numOfTop):
+    V = count_active_vertex()
+    E = count_edges()
+    N = numOfTop
+    with open(canvas.filename, "w") as file1:
+        print(V, E, N, file=file1)
+
+        for v in range(MAX_ELEMS):
+            if active_vertex[v]:
+                x = cord[v][0]
+                y = cord[v][1]
+                n = cord[v][2]
+                print(x, y, n, file=file1)
+
+        for e in range(MAX_ELEMS):
+            if active_vertex[e]:
+                for i in range(MAX_ELEMS):
                     if graph[e][i] == 1:
-                        i1 = str(e + 1)
-                        i2 = str(i + 1)
-                        file1.write(i1)
-                        file1.write(' ')
-                        file1.write(i2)
-                        file1.write('\n')
+                        print(e + 1, i + 1, file=file1)
 
 
 def close():
     canvas.quit()
 
 
-button_exp_file = Button(canvas, text='Export file', command=graph_from_file)
-button_exp_file.place(x=10, y=10)
+if __name__ == '__main__':
+    init()
 
-button_save_file = Button(canvas, text='Save graph', command=graph_in_file)
-button_save_file.place(x=110, y=10)
+    root = Tk()
+    canvas = Canvas(root, width=800, height=800)
+    canvas.pack(side=LEFT)
 
-button_close_file = Button(canvas, text='Exit', command=close)
-button_close_file.place(x=725, y=10)
+    button_exp_file = Button(canvas, text='Load graph', command=load_graph)
+    button_exp_file.place(x=10, y=10)
 
-canvas.bind('<Button-1>', onCanvasClickLeft)
-canvas.bind('<Button-2>', onCanvasClickRight)
+    button_save_file = Button(canvas, text='Save graph', command=save_graph)
+    button_save_file.place(x=110, y=10)
 
-root.mainloop()
+    button_close_file = Button(canvas, text='Exit', command=close)
+    button_close_file.place(x=725, y=10)
+
+    canvas.bind('<Button-1>', onCanvasClickLeft)
+    canvas.bind('<Button-2>', onCanvasClickRight)
+
+    root.mainloop()
