@@ -206,6 +206,16 @@ def close():
     canvas.quit()
 
 
+def find_min_vertex():
+    min_num = cord[0][2]
+    for i in range(MAX_ELEMS):
+        if not active_vertex[i]:
+            continue
+        el = cord[i][2]
+        if el < min_num:
+            min_num = el
+    return min_num
+
 def dfs(start):
     global graph, visited, finished
     print(f'-> {start+1}')
@@ -215,7 +225,6 @@ def dfs(start):
     for neigh in range(MAX_ELEMS):
         if (graph[start][neigh] == 1) and (neigh not in visited):
             dfs(neigh)
-            update()
     print(f'<- {start+1}')
     finished.append(start)
     update()
@@ -228,25 +237,14 @@ def dfs_start():
     finished = []
     update()
 
-    event = Event()
-    thread = Thread(target=task, args=(event,))
-    # start the thread
+    thread = Thread(target=task)
     thread.start()
 
     update()
 
 
-def task(event):
-    # for i in range(6):
-    #     print(f'Running #{i+1}')
-    #     sleep(1)
-    #     if event.is_set():
-    #         print('The thread was stopped prematurely.')
-    #         break
-    # else:
-    #     print('The thread was stopped maturely.')
-
-    dfs(0)
+def task():
+    dfs(find_min_vertex())
 
 
 if __name__ == '__main__':
