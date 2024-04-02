@@ -1,12 +1,14 @@
 from tkinter import *
 from tkinter import filedialog
+from threading import Thread, Event
+from time import sleep
 
 MAX_ELEMS = 50
 r = 25
 
 
 def init():
-    global numOfTop, active_vertex, cord, graph, selected_vertex, selected_vertex_for_delete
+    global numOfTop, active_vertex, cord, graph, selected_vertex, selected_vertex_for_delete, visited, finished
     numOfTop = 0
     selected_vertex = None
     selected_vertex_for_delete = None
@@ -17,6 +19,8 @@ def init():
     for c in range(MAX_ELEMS):
         graph.append([0] * MAX_ELEMS)
 
+    visited = []
+    finished = []
 
 def dist_to_vertex(v1, v2):
     return ((v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2) ** 0.5
@@ -44,7 +48,13 @@ def update():
 
     for i in range(MAX_ELEMS):
         if active_vertex[i]:
-            canvas.create_oval(cord[i][0] - r, cord[i][1] - r, cord[i][0] + r, cord[i][1] + r, fill='lime')
+            if i in finished:
+                color_var = 'red'
+            elif i in visited:
+                color_var = 'blue'
+            else:
+                color_var = 'lime'
+            canvas.create_oval(cord[i][0] - r, cord[i][1] - r, cord[i][0] + r, cord[i][1] + r, fill=color_var)
             canvas.create_text(cord[i][0], cord[i][1], text=str(cord[i][2]))
 
 
@@ -90,7 +100,7 @@ def onCanvasClickLeft(ev: Event):
     current_point = (ev.x, ev.y)
     vertex, index = find_vertex(current_point)
     if vertex is None:
-        selected_vertex = current_point
+        ##selected_vertex = current_point
         addVertex(ev.x, ev.y, numOfTop+1)
 
     else:  # пошук вершин для побудови ребра
@@ -196,6 +206,49 @@ def close():
     canvas.quit()
 
 
+def dfs(start):
+    global graph, visited, finished
+    print(f'-> {start+1}')
+    visited.append(start)
+    update()
+    sleep(1)
+    for neigh in range(MAX_ELEMS):
+        if (graph[start][neigh] == 1) and (neigh not in visited):
+            dfs(neigh)
+            update()
+    print(f'<- {start+1}')
+    finished.append(start)
+    update()
+    sleep(1)
+
+
+def dfs_start():
+    global visited, finished
+    visited = []
+    finished = []
+    update()
+
+    event = Event()
+    thread = Thread(target=task, args=(event,))
+    # start the thread
+    thread.start()
+
+    update()
+
+
+def task(event):
+    # for i in range(6):
+    #     print(f'Running #{i+1}')
+    #     sleep(1)
+    #     if event.is_set():
+    #         print('The thread was stopped prematurely.')
+    #         break
+    # else:
+    #     print('The thread was stopped maturely.')
+
+    dfs(0)
+
+
 if __name__ == '__main__':
     init()
 
@@ -211,6 +264,9 @@ if __name__ == '__main__':
 
     button_close_file = Button(canvas, text='Exit', command=close)
     button_close_file.place(x=725, y=10)
+
+    button_search_file = Button(canvas, text='DFS', command=dfs_start)
+    button_search_file.place(x=250, y=10)
 
     canvas.bind('<Button-1>', onCanvasClickLeft)
     canvas.bind('<Button-2>', onCanvasClickRight)
