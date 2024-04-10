@@ -8,7 +8,7 @@ r = 25
 
 
 def init():
-    global numOfTop, active_vertex, cord, graph, selected_vertex, selected_vertex_for_delete, visited, finished
+    global numOfTop, active_vertex, cord, graph, selected_vertex, selected_vertex_for_delete, visited, finished, b,e, que
     numOfTop = 0
     selected_vertex = None
     selected_vertex_for_delete = None
@@ -21,6 +21,10 @@ def init():
 
     visited = []
     finished = []
+
+    b = 0
+    e = 0
+    que = [0]*MAX_ELEMS
 
 def dist_to_vertex(v1, v2):
     return ((v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2) ** 0.5
@@ -212,9 +216,9 @@ def find_min_vertex():
         if not active_vertex[i]:
             continue
         el = cord[i][2]
-        if el < min_num:
+        if el <= min_num:
             min_num = el
-    return min_num
+    return min_num-1
 
 def dfs(start):
     global graph, visited, finished
@@ -237,14 +241,68 @@ def dfs_start():
     finished = []
     update()
 
-    thread = Thread(target=task)
+    el = find_min_vertex()
+    thread = Thread(target=dfs, args=(el,))
     thread.start()
 
     update()
 
 
-def task():
-    dfs(find_min_vertex())
+def push(elem):
+    global b, e, que
+    que[e] = elem
+    e += 1
+
+def pop():
+    global b, e, que
+    elem = que[b]
+    b += 1
+    return elem
+
+def empty():
+    global b, e
+    return b == e
+
+
+def bfs_start():
+    global visited, finished
+    visited = []
+    finished = []
+    update()
+
+    thread = Thread(target=bfs)
+    thread.start()
+
+    update()
+
+
+
+def bfs():
+    global graph, b, e, que, visited, finished
+    visited = []
+    finished = []
+
+    b = 0
+    e = 0
+    que = [0] * MAX_ELEMS
+
+    start = find_min_vertex()
+    push(start)
+    visited.append(start)
+
+    while not empty():
+        start = pop()
+        finished.append(start)
+        update()
+        sleep(1)
+
+        for neigh in range(MAX_ELEMS):
+            if (graph[start][neigh] == 1) and (neigh not in visited):
+                push(neigh)
+                visited.append(neigh)
+                update()
+                sleep(1)
+
 
 
 if __name__ == '__main__':
@@ -265,6 +323,9 @@ if __name__ == '__main__':
 
     button_search_file = Button(canvas, text='DFS', command=dfs_start)
     button_search_file.place(x=250, y=10)
+
+    button_search_file = Button(canvas, text='BFS', command=bfs_start)
+    button_search_file.place(x=325, y=10)
 
     canvas.bind('<Button-1>', onCanvasClickLeft)
     canvas.bind('<Button-2>', onCanvasClickRight)
