@@ -1,2 +1,7 @@
 # Default ignored files
 /.idea
+graph*.txt
+.DS_Store
+документація.txt
+Конспект графи.docx
+src/graph1.txt

@@ -270,14 +270,15 @@ def bfs_start():
     finished = []
     update()
 
-    thread = Thread(target=bfs)
+    start = find_min_vertex()
+    thread = Thread(target=bfs, args=(start,))
     thread.start()
 
     update()
 
 
 
-def bfs():
+def bfs(start):
     global graph, b, e, que, visited, finished
     visited = []
     finished = []
@@ -286,7 +287,6 @@ def bfs():
     e = 0
     que = [0] * MAX_ELEMS
 
-    start = find_min_vertex()
     push(start)
     visited.append(start)
 
