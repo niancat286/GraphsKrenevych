@@ -209,8 +209,16 @@ def save_graph():
 def close():
     canvas.quit()
 
+def findNotVisited():
+    global finished
+    for i in range(MAX_ELEMS):
+        if (active_vertex[i]) and (i not in finished):
+            return i
+
+    return -1
 
 def find_min_vertex():
+    global finished
     min_num = cord[0][2]
     for i in range(MAX_ELEMS):
         if not active_vertex[i]:
@@ -263,25 +271,23 @@ def empty():
     global b, e
     return b == e
 
+def startAllBfs():
+    while True:
+        start = findNotVisited()
+        if start == -1:
+            break
+        bfs(start)
 
 def bfs_start():
     global visited, finished
     visited = []
     finished = []
-    update()
 
-    start = find_min_vertex()
-    thread = Thread(target=bfs, args=(start,))
-    thread.start()
-
-    update()
-
+    Thread(target=startAllBfs).start()
 
 
 def bfs(start):
     global graph, b, e, que, visited, finished
-    visited = []
-    finished = []
 
     b = 0
     e = 0
