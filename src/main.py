@@ -8,7 +8,7 @@ r = 25
 
 
 def init():
-    global numOfTop, active_vertex, cord, graph, selected_vertex, selected_vertex_for_delete, visited, finished, b,e, que
+    global numOfTop, active_vertex, cord, graph, selected_vertex, selected_vertex_for_delete, visited, finished, b,e, que, answer
     numOfTop = 0
     selected_vertex = None
     selected_vertex_for_delete = None
@@ -25,6 +25,8 @@ def init():
     b = 0
     e = 0
     que = [0]*MAX_ELEMS
+
+    answer = 'Hello!'
 
 def dist_to_vertex(v1, v2):
     return ((v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2) ** 0.5
@@ -210,9 +212,10 @@ def close():
     canvas.quit()
 
 def findNotVisited():
-    global finished
+    global finished, answer
     for i in range(MAX_ELEMS):
         if (active_vertex[i]) and (i not in finished):
+            answer = 'Disconnected'
             return i
 
     return -1
@@ -228,8 +231,16 @@ def find_min_vertex():
             min_num = el
     return min_num-1
 
+def count_elem(mas):
+    global finished, visited
+    num = 0
+    for i in range(MAX_ELEMS):
+        if i in mas:
+            num += 1
+    return num
+
 def dfs(start):
-    global graph, visited, finished
+    global graph, visited, finished, answer_Lab
     print(f'-> {start+1}')
     visited.append(start)
     update()
@@ -242,13 +253,27 @@ def dfs(start):
     update()
     sleep(1)
 
+    if count_elem(finished) == count_elem(visited):
+
+        num1 = count_active_vertex()
+        num2 = count_elem(finished)
+        if num1 == num2:
+            print('connected')
+            answer = 'Connected'
+        else:
+            print('Disconnected')
+            answer = 'Disconnected'
+
+        answer_Lab.configure(text=answer)
+
+
+
 
 def dfs_start():
     global visited, finished
     visited = []
     finished = []
     update()
-
     el = find_min_vertex()
     thread = Thread(target=dfs, args=(el,))
     thread.start()
@@ -332,6 +357,10 @@ if __name__ == '__main__':
 
     button_search_file = Button(canvas, text='BFS', command=bfs_start)
     button_search_file.place(x=325, y=10)
+
+    answer_Lab = Label(root, text= 'Hello..')
+    answer_Lab.place(x=425, y=10)
+
 
     canvas.bind('<Button-1>', onCanvasClickLeft)
     canvas.bind('<Button-2>', onCanvasClickRight)
