@@ -212,10 +212,9 @@ def close():
     canvas.quit()
 
 def findNotVisited():
-    global finished, answer
+    global finished
     for i in range(MAX_ELEMS):
         if (active_vertex[i]) and (i not in finished):
-            answer = 'Disconnected'
             return i
 
     return -1
@@ -297,23 +296,26 @@ def empty():
     return b == e
 
 def startAllBfs():
+    global answer
     while True:
         start = findNotVisited()
         if start == -1:
             break
+        if start != 0:
+            answer = 'Disconnected'
         bfs(start)
 
 def bfs_start():
-    global visited, finished
+    global visited, finished, answer
     visited = []
     finished = []
+    answer = 'Connected'
 
     Thread(target=startAllBfs).start()
 
 
 def bfs(start):
-    global graph, b, e, que, visited, finished
-
+    global graph, b, e, que, visited, finished, answer
     b = 0
     e = 0
     que = [0] * MAX_ELEMS
@@ -333,6 +335,9 @@ def bfs(start):
                 visited.append(neigh)
                 update()
                 sleep(1)
+
+
+    answer_Lab.configure(text=answer)
 
 
 
