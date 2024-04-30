@@ -8,12 +8,12 @@ r = 25
 
 
 def init():
-    global numOfTop, active_vertex, cord, graph, selected_vertex, selected_vertex_for_delete, visited, finished, b,e, que, answer
+    global numOfTop, active_vertex, cord, graph, selected_vertex, selected_vertex_for_delete, visited, finished, b, e, que, answer
     numOfTop = 0
     selected_vertex = None
     selected_vertex_for_delete = None
     active_vertex = [False] * MAX_ELEMS
-    cord = [(0, 0, 0)] * MAX_ELEMS  #третя координата це імʼя вершини
+    cord = [(0, 0, 0)] * MAX_ELEMS  # третя координата це імʼя вершини
 
     graph = []
     for c in range(MAX_ELEMS):
@@ -24,9 +24,10 @@ def init():
 
     b = 0
     e = 0
-    que = [0]*MAX_ELEMS
+    que = [0] * MAX_ELEMS
 
     answer = 'Hello!'
+
 
 def dist_to_vertex(v1, v2):
     return ((v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2) ** 0.5
@@ -107,7 +108,7 @@ def onCanvasClickLeft(ev: Event):
     vertex, index = find_vertex(current_point)
     if vertex is None:
         ##selected_vertex = current_point
-        addVertex(ev.x, ev.y, numOfTop+1)
+        addVertex(ev.x, ev.y, numOfTop + 1)
 
     else:  # пошук вершин для побудови ребра
         if selected_vertex is None:
@@ -154,11 +155,12 @@ def onCanvasClickRight(ev: Event):  # використано для видале
         selected_vertex_for_delete = None
         update()
 
+
 def find_max_n(array):
     maxn = 0
-    for i in range(numOfTop-1):
-        if array[i][2] < array[i+1][2]:
-            maxn = array[i+1][2]
+    for i in range(numOfTop - 1):
+        if array[i][2] < array[i + 1][2]:
+            maxn = array[i + 1][2]
     return maxn
 
 
@@ -211,6 +213,7 @@ def save_graph():
 def close():
     canvas.quit()
 
+
 def findNotVisited():
     global finished
     for i in range(MAX_ELEMS):
@@ -218,6 +221,7 @@ def findNotVisited():
             return i
 
     return -1
+
 
 def find_min_vertex():
     global finished
@@ -228,7 +232,8 @@ def find_min_vertex():
         el = cord[i][2]
         if el <= min_num:
             min_num = el
-    return min_num-1
+    return min_num - 1
+
 
 def count_elem(mas):
     global finished, visited
@@ -238,16 +243,17 @@ def count_elem(mas):
             num += 1
     return num
 
+
 def dfs(start):
     global graph, visited, finished, answer_Lab
-    print(f'-> {start+1}')
+    print(f'-> {start + 1}')
     visited.append(start)
     update()
     sleep(1)
     for neigh in range(MAX_ELEMS):
         if (graph[start][neigh] == 1) and (neigh not in visited):
             dfs(neigh)
-    print(f'<- {start+1}')
+    print(f'<- {start + 1}')
     finished.append(start)
     update()
     sleep(1)
@@ -264,8 +270,6 @@ def dfs(start):
             answer = 'Disconnected'
 
         answer_Lab.configure(text=answer)
-
-
 
 
 def dfs_start():
@@ -285,15 +289,18 @@ def push(elem):
     que[e] = elem
     e += 1
 
+
 def pop():
     global b, e, que
     elem = que[b]
     b += 1
     return elem
 
+
 def empty():
     global b, e
     return b == e
+
 
 def startAllBfs():
     global answer
@@ -304,6 +311,7 @@ def startAllBfs():
         if start != 0:
             answer = 'Disconnected'
         bfs(start)
+
 
 def bfs_start():
     global visited, finished, answer
@@ -336,9 +344,82 @@ def bfs(start):
                 update()
                 sleep(1)
 
+    answer_Lab.configure(text=answer)
+
+
+def way_create(number):
+    global visited, finished
+    way_arr = []
+    way_arr.append(visited[-1])
+    temp = 0
+    while True:
+        for i in range(number + 1):
+            if visited[i] == way_arr[temp]:
+                temp += 1
+                if finished[i] != -1:
+                    way_arr.append(finished[i])
+                else:
+                    return way_arr[::-1]
+
+
+def find_way(start, end):
+    global visited, finished, answer, graph, b, e, que, cord
+    visited = []
+    finished = []
+    b = 0
+    e = 0
+    temp = 0
+    que = [0] * MAX_ELEMS
+
+    push(start)
+    visited.append(start)
+    finished.append(-1)
+
+    while not empty():
+        start = pop()
+
+        for neigh in range(MAX_ELEMS):
+            if (graph[start][neigh] == 1) and (neigh not in visited):
+                push(neigh)
+                visited.append(neigh)
+                finished.append(start)
+                temp += 1
+
+    if end not in visited:
+        answer_Lab.configure(text="disconected")
+        return
+
+    way_mas = way_create(temp)
+
+    answer = ""
+    for n in way_mas[:-1]:
+        answer += f"{cord[n][2]} -> "
+    answer += f"{cord[way_mas[-1]][2]}"
 
     answer_Lab.configure(text=answer)
 
+
+start = None
+end = None
+
+def selectStart(event):
+    global start
+    current_point = (event.x, event.y)
+    startPony, index = find_vertex(current_point)
+    start = startPony[2]
+    print(f"Start = {start}")
+
+def selectEnd(event):
+    global end
+    current_point = (event.x, event.y)
+    endPony, index = find_vertex(current_point)
+    end = endPony[2]
+    print(f"end = {end}")
+
+def find_way_start():
+    print(f"")
+    if start is not None and end is not None:
+        find_way(start-1, end-1)
 
 
 if __name__ == '__main__':
@@ -351,8 +432,11 @@ if __name__ == '__main__':
     button_exp_file = Button(canvas, text='Load graph', command=load_graph)
     button_exp_file.place(x=10, y=10)
 
+    button_find_file = Button(canvas, text='Find way', command=find_way_start)
+    button_find_file.place(x=10, y=40)
+
     button_save_file = Button(canvas, text='Save graph', command=save_graph)
-    button_save_file.place(x=110, y=10)
+    button_save_file.place(x=115, y=10)
 
     button_close_file = Button(canvas, text='Exit', command=close)
     button_close_file.place(x=725, y=10)
@@ -363,11 +447,12 @@ if __name__ == '__main__':
     button_search_file = Button(canvas, text='BFS', command=bfs_start)
     button_search_file.place(x=325, y=10)
 
-    answer_Lab = Label(root, text= 'Hello..')
+    answer_Lab = Label(root, text='Hello..')
     answer_Lab.place(x=425, y=10)
-
 
     canvas.bind('<Button-1>', onCanvasClickLeft)
     canvas.bind('<Button-2>', onCanvasClickRight)
+    canvas.bind('<Control-Button-1>', selectStart, "+")
+    canvas.bind('<Shift-Control-Button-1>', selectEnd, "+")
 
     root.mainloop()
