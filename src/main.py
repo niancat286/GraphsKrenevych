@@ -398,6 +398,10 @@ def find_way(start, end):
 
     answer_Lab.configure(text=answer)
 
+    visited=[]
+    finished=[]
+    finished = way_mas
+    update()
 
 start = None
 end = None
