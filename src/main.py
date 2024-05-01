@@ -347,49 +347,42 @@ def bfs(start):
     answer_Lab.configure(text=answer)
 
 
-def way_create(number):
-    global visited, finished
+def way_create(sources):
     way_arr = []
-    way_arr.append(visited[-1])
-    temp = 0
-    while True:
-        for i in range(number + 1):
-            if visited[i] == way_arr[temp]:
-                temp += 1
-                if finished[i] != -1:
-                    way_arr.append(finished[i])
-                else:
-                    return way_arr[::-1]
+    curr = END
+    while curr != START:
+        way_arr.append(curr)
+        curr = sources[curr]
+        
+    way_arr.append(START)
+    
+    return way_arr[::-1]
 
 
-def find_way(start, end):
-    global visited, finished, answer, graph, b, e, que, cord
-    visited = []
-    finished = []
+NOT_VISITED = -2
+def find_way(current, end):
+    global finished, visited, answer, graph, b, e, que, cord
+    sources = [-2] * MAX_ELEMS
     b = 0
     e = 0
-    temp = 0
     que = [0] * MAX_ELEMS
 
-    push(start)
-    visited.append(start)
-    finished.append(-1)
+    push(current)
+    sources[current] = -1
 
     while not empty():
-        start = pop()
+        current = pop()
 
         for neigh in range(MAX_ELEMS):
-            if (graph[start][neigh] == 1) and (neigh not in visited):
+            if (graph[current][neigh] == 1) and (sources[neigh] == NOT_VISITED):
                 push(neigh)
-                visited.append(neigh)
-                finished.append(start)
-                temp += 1
+                sources[neigh] = current
 
-    if end not in visited:
+    if sources[END] == NOT_VISITED:
         answer_Lab.configure(text="disconected")
         return
 
-    way_mas = way_create(temp)
+    way_mas = way_create(sources)
 
     answer = ""
     for n in way_mas[:-1]:
@@ -398,32 +391,32 @@ def find_way(start, end):
 
     answer_Lab.configure(text=answer)
 
-    visited=[]
-    finished=[]
+    visited = []
     finished = way_mas
     update()
 
-start = None
-end = None
+
+START = None
+END = None
 
 def selectStart(event):
-    global start
+    global START
     current_point = (event.x, event.y)
     startPony, index = find_vertex(current_point)
-    start = startPony[2]
-    print(f"Start = {start}")
+    START = index
+    print(f"Start = {START}")
 
 def selectEnd(event):
-    global end
+    global END
     current_point = (event.x, event.y)
     endPony, index = find_vertex(current_point)
-    end = endPony[2]
-    print(f"end = {end}")
+    END = index
+    print(f"end = {END}")
 
 def find_way_start():
     print(f"")
-    if start is not None and end is not None:
-        find_way(start-1, end-1)
+    if START is not None and END is not None:
+        find_way(START, END)
 
 
 if __name__ == '__main__':
